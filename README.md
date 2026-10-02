@@ -72,6 +72,6 @@ mvn spring-boot:run   # http://localhost:8080
 ## Status
 
 - [x] Domain layer: shipment core and the five decorators, with unit tests
-- [ ] Application service, REST controllers, JWT login, CORS
-- [ ] Custom annotations (`@AuditedQuote`, `@ValidGiftMessage`, `@SafeText`)
+- [x] Application service, REST controllers, JWT login, CORS
+- [x] Custom annotations (`@AuditedQuote`, `@ValidGiftMessage`, `@SafeText`)
 - [ ] Frontend (Vite + React + three.js)
