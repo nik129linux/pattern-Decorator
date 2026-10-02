@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink: #14100e;
+  --color-ink-soft: #1d1714;
+  --color-line: #2c2420;
+  --color-crimson: #8c1c13;
+  --color-moss: #2f6b4f;
+  --color-gold: #c9a24a;
+  --color-paper: #f4ece0;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: var(--color-ink);
+  background-image:
+    radial-gradient(1100px 600px at 12% -15%, rgba(201, 162, 74, 0.08), transparent 60%),
+    radial-gradient(900px 520px at 105% 0%, rgba(47, 107, 79, 0.09), transparent 55%);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Decorator layers: each new wrapper scales + fades in. */
+@keyframes layer-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.layer-wrap {
+  animation: layer-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer-wrap {
+    animation: none;
+  }
+}
