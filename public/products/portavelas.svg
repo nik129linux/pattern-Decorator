@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="Night candle holder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d1714"/>
+      <stop offset="1" stop-color="#14100e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.4" r="0.6">
+      <stop offset="0" stop-color="#e0c07f" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#e0c07f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="200" cy="150" r="90" fill="url(#glow)"/>
+  <path d="M200 92c14 18 22 30 22 44a22 22 0 1 1-44 0c0-14 8-26 22-44z" fill="#c9a24a"/>
+  <path d="M200 108c8 12 12 20 12 28a12 12 0 1 1-24 0c0-8 4-16 12-28z" fill="#f4ece0"/>
+  <rect x="176" y="168" width="48" height="18" rx="6" fill="#8c1c13"/>
+  <path d="M188 186h24l10 70h-44z" fill="#191412"/>
+  <ellipse cx="200" cy="300" rx="90" ry="26" fill="#0d0a09"/>
+  <ellipse cx="200" cy="288" rx="76" ry="22" fill="#241a15"/>
+  <ellipse cx="200" cy="288" rx="76" ry="22" fill="none" stroke="#c9a24a" stroke-width="4"/>
+  <g fill="#2f6b4f">
+    <circle cx="150" cy="286" r="6"/><circle cx="200" cy="294" r="6"/><circle cx="250" cy="286" r="6"/>
+  </g>
+</svg>
