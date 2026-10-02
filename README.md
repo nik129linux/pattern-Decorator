@@ -64,14 +64,25 @@ Tokens expire after 24 hours.
 
 Requires Java 21 and Maven.
 
+Backend:
+
 ```bash
 mvn test
 mvn spring-boot:run   # http://localhost:8080
 ```
+
+Frontend (Node 20+, in a second terminal, with the backend running):
+
+```bash
+npm install
+npm run dev           # http://localhost:5173
+```
+
+The frontend signs in with the demo user (`demo` / `demo123`) automatically. `VITE_API_URL` in `.env` points it at the backend.
 
 ## Status
 
 - [x] Domain layer: shipment core and the five decorators, with unit tests
 - [x] Application service, REST controllers, JWT login, CORS
 - [x] Custom annotations (`@AuditedQuote`, `@ValidGiftMessage`, `@SafeText`)
-- [ ] Frontend (Vite + React + three.js)
+- [x] Frontend (Vite + React + Tailwind): quote workspace with nested layers that mirror the decorator chain

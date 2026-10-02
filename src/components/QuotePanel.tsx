@@ -110,13 +110,13 @@ export default function QuotePanel({
           <textarea
             className={`${inputClass} min-h-24 resize-y`}
             value={form.giftMessage}
-            maxLength={200}
+            maxLength={140}
             disabled={!giftEnabled}
             onChange={(event) => onChange({ giftMessage: event.target.value })}
             placeholder={giftEnabled ? 'Happy birthday, abuela!' : 'Enable "Gift wrap" to write a message'}
           />
         </label>
-        <p className="mt-1 text-xs text-paper/50">{giftEnabled ? `${form.giftMessage.length}/200` : 'Gift wrap is off'}</p>
+        <p className="mt-1 text-xs text-paper/50">{giftEnabled ? `${form.giftMessage.length}/140` : 'Gift wrap is off'}</p>
       </Section>
 
       <Section title="6. Quote summary">
