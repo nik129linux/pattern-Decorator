@@ -1,11 +1,14 @@
-import type { ApiErrorBody } from '../types/api'
-import { clearSession, getToken, notifyUnauthorized } from './session'
+import type { ApiErrorBody, AuthResponse } from '../types/api'
 
 export const API_BASE_URL: string =
   (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8080'
 
-/** Mocks stay on unless explicitly disabled with VITE_USE_MOCKS=false. */
-export const USE_MOCKS: boolean = String(import.meta.env.VITE_USE_MOCKS ?? 'true').toLowerCase() !== 'false'
+const LOGIN_PATH = '/api/v1/auth/login'
+const DEMO_CREDENTIALS = { username: 'demo', password: 'demo123' }
+
+/** Token lives in memory only; a 401 triggers a fresh sign-in. */
+let token: string | null = null
+let pendingLogin: Promise<string> | null = null
 
 export class ApiError extends Error {
   readonly status: number
@@ -19,57 +22,102 @@ export class ApiError extends Error {
   }
 }
 
-interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-  body?: unknown
-  /** Every route except login requires the bearer token. */
-  auth?: boolean
+async function readBody(response: Response): Promise<unknown> {
+  const text = await response.text()
+  if (!text) return null
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
 }
 
 function fallbackMessage(status: number): string {
   if (status === 0) return 'Could not reach the server. Please try again.'
-  if (status === 401) return 'Your session has expired. Please sign in again.'
-  if (status === 403) return 'You are not allowed to perform this action.'
+  if (status === 401) return 'Sign-in failed. Check that the backend is running.'
   if (status === 404) return 'The requested resource was not found.'
   if (status >= 500) return 'The server had a problem. Please try again shortly.'
   return 'The request could not be completed.'
 }
 
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, auth = true } = options
+/** POST /api/v1/auth/login with the demo credentials. Concurrent calls share one request. */
+async function signIn(): Promise<string> {
+  if (pendingLogin) return pendingLogin
 
+  pendingLogin = (async () => {
+    let response: Response
+    try {
+      response = await fetch(`${API_BASE_URL}${LOGIN_PATH}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(DEMO_CREDENTIALS),
+      })
+    } catch {
+      throw new ApiError(fallbackMessage(0), 0, 'network_error')
+    }
+
+    const data = (await readBody(response)) as AuthResponse | ApiErrorBody | null
+    if (!response.ok) {
+      const message = data && 'message' in data ? data.message : fallbackMessage(response.status)
+      throw new ApiError(message, response.status, data && 'error' in data ? data.error : 'login_failed')
+    }
+
+    const auth = data as AuthResponse
+    token = auth.token
+    return token
+  })()
+
+  try {
+    return await pendingLogin
+  } finally {
+    pendingLogin = null
+  }
+}
+
+async function ensureToken(): Promise<string> {
+  if (token) return token
+  return signIn()
+}
+
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  body?: unknown
+}
+
+async function send(path: string, method: RequestOptions['method'], body: unknown): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
-  if (auth) {
-    const token = getToken()
-    if (token) headers.Authorization = `Bearer ${token}`
-  }
+  if (token) headers.Authorization = `Bearer ${token}`
 
-  let response: Response
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
-      method,
+    return await fetch(`${API_BASE_URL}${path}`, {
+      method: method ?? 'GET',
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,
     })
   } catch {
     throw new ApiError(fallbackMessage(0), 0, 'network_error')
   }
+}
 
-  if (response.status === 401 && auth) {
-    clearSession()
-    notifyUnauthorized()
+/**
+ * Plain fetch wrapper: auto-signs in with the demo user on the first call,
+ * attaches the bearer token to every route and re-signs in once on 401.
+ */
+export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const { method = 'GET', body } = options
+
+  await ensureToken()
+
+  let response = await send(path, method, body)
+
+  if (response.status === 401) {
+    token = null
+    await ensureToken()
+    response = await send(path, method, body)
   }
 
-  const text = await response.text()
-  let data: unknown = null
-  if (text) {
-    try {
-      data = JSON.parse(text)
-    } catch {
-      data = null
-    }
-  }
+  const data = await readBody(response)
 
   if (!response.ok) {
     const payload = data as Partial<ApiErrorBody> | null
