@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: barniz-express-backend
+
+server:
+  port: 8080
+
+barniz:
+  jwt:
+    # HS256 needs at least 256 bits, so keep the secret long.
+    secret: barniz-express-demo-signing-secret-change-me-0123456789abcdef
+    ttl-hours: 24
+  cors:
+    allowed-origins: http://localhost:5173
